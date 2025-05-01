@@ -1,0 +1,42 @@
+@startuml use cases diagram
+
+left to right direction
+
+actor Admin
+actor Member
+actor Guest
+
+Member <|- Admin
+
+package Authentication {
+  usecase (Register)
+  usecase (Authenticate)
+  usecase (DeleteAccount)
+  
+  Guest --> Register
+  Guest --> Authenticate
+  
+  Member --> DeleteAccount
+}
+
+package Rooms {
+  usecase (CreateRoom)
+  usecase (RenameRoom)
+  usecase (ListRooms)
+  usecase (DeleteRoom)
+  
+  Admin --> CreateRoom
+  Admin --> RenameRoom
+  Admin --> DeleteRoom
+  
+  Member --> ListRooms
+}
+
+package Messaging {
+  usecase (SendMessage)
+  usecase (ListMessages)
+  
+  SendMessage <-- Member
+  ListMessages <-- Member
+}
+@enduml

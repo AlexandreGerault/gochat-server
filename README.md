@@ -8,50 +8,7 @@ As a learning feature, I don't plan password forgotten features and similar. Jus
 
 ## Use cases
 
-```{.plantuml}
-@startuml
-
-left to right direction
-
-actor Admin
-actor Member
-actor Guest
-
-Member <|- Admin
-
-package Authentication {
-  usecase (Register)
-  usecase (Authenticate)
-  usecase (DeleteAccount)
-  
-  Guest --> Register
-  Guest --> Authenticate
-  
-  Member --> DeleteAccount
-}
-
-package Rooms {
-  usecase (CreateRoom)
-  usecase (RenameRoom)
-  usecase (ListRooms)
-  usecase (DeleteRoom)
-  
-  Admin --> CreateRoom
-  Admin --> RenameRoom
-  Admin --> DeleteRoom
-  
-  Member --> ListRooms
-}
-
-package Messaging {
-  usecase (SendMessage)
-  usecase (ListMessages)
-  
-  SendMessage <-- Member
-  ListMessages <-- Member
-}
-@enduml
-```
+![usecases diagram](https://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/AlexandreGerault/gochat-server/refs/heads/main/documentation/uml/usecases.puml)
 
 ## Architecture
 
@@ -59,7 +16,7 @@ package Messaging {
 
 ### Requirements
 
-To be able to build the project, you need to have `go` install. On Arch you can install it like:
+To be able to build the project, you need to have `go` installed. On Arch you can typically install it like so:
 
 ```bash
 sudo pacman -S go

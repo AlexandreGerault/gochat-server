@@ -12,6 +12,15 @@ As a learning feature, I don't plan password forgotten features and similar. Jus
 
 ## Architecture
 
+Regarding the architecture I plan to stick to something relatively simple. However I did not have definitive answers yet.
+At the moment here are the points I think are gonna be true:
+
+- It is a server/client architecture, opposed to P2P (peer-to-peer) ;
+- It is going to use http(s) transport for synchronous communication ;
+- It is going to use some Socket-like transport for real-time.
+
+To store data I'll start with a relationnal database. Regarding the code organization I think I'll follow some hexagonal architecture principals.
+
 ## Build
 
 ### Requirements

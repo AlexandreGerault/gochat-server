@@ -1,6 +1,8 @@
 package application
 
 import (
+	"log"
+
 	"alexandre-gerault.fr/gochat-server/internal/messaging/domain"
 	"github.com/google/uuid"
 )
@@ -22,11 +24,19 @@ type MessageRepository interface {
 	Save(message domain.Message)
 }
 
-type UserRepository interface {
+type AuthorRepository interface {
 	GetById(id uuid.UUID) (domain.Author, bool)
 }
 
-func SendMessageHandler(userRepository UserRepository, messageRepository MessageRepository) func(dto SendMessageDto, presenter SendMessagePresenter) {
+type UuidProvider interface{
+	Generate() uuid.UUID
+}
+
+func SendMessageHandler(
+	userRepository AuthorRepository,
+	messageRepository MessageRepository,
+	uuidProvider UuidProvider,
+) func(dto SendMessageDto, presenter SendMessagePresenter) {
 	return func(dto SendMessageDto, presenter SendMessagePresenter) {
 		if len(dto.content) == 0 {
 			presenter.MessageEmpty()
@@ -38,14 +48,20 @@ func SendMessageHandler(userRepository UserRepository, messageRepository Message
 			return
 		}
 
-		author_id, _ := uuid.Parse(dto.author_id)
+		author_id, author_err := uuid.Parse(dto.author_id)
+		room_id, room_err := uuid.Parse(dto.room_id)
 
-		if _, found := userRepository.GetById(author_id); found == false {
+		if author_err != nil || room_err != nil {
+			log.Fatal("Invalid UUID format")
+		}
+
+		if _, found := userRepository.GetById(author_id); !found {
 			presenter.AuthorNotFound()
 			return
 		}
 
-		message := domain.NewMessage(dto.content)
+		message_id := uuidProvider.Generate()
+		message := domain.NewMessage(message_id, room_id, author_id, dto.content)
 		messageRepository.Save(message)
 
 		presenter.Presents()

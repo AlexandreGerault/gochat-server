@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"alexandre-gerault.fr/gochat-server/internal/messaging/domain"
+	testUtils "alexandre-gerault.fr/gochat-server/internal/testing"
 	"github.com/fufuok/random"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -18,11 +19,11 @@ type InMemoryMessageRepository struct {
 }
 
 type InMemoryAuthorRepository struct {
-	users []domain.Author
+	authors []domain.Author
 }
 
 func (inMemoryUserRepository *InMemoryAuthorRepository) GetById(id uuid.UUID) (domain.Author, bool) {
-	for _, author := range inMemoryUserRepository.users {
+	for _, author := range inMemoryUserRepository.authors {
 		if author.Uuid.String() == id.String() {
 			return author, true
 		}
@@ -52,13 +53,16 @@ func (presenter *SendMessageTestPresenter) AuthorNotFound() {
 }
 
 func TestItCanSendMessage(t *testing.T) {
-	author_id, err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
+	fakeUuidProvider := testUtils.FakeUuidProvider{}
 
-	dto := SendMessageDto{author_id.String(), "room_id", "Some message"}
+	author_id, author_err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
+	room_id, room_err := uuid.Parse("01969529-0a14-7556-a125-e9224be7b3ab")
 
-	if err != nil {
-		t.Error("Cannot generate author_id")
+	if author_err != nil || room_err != nil {
+		t.Error("Error while parsing a uuid")
 	}
+
+	dto := SendMessageDto{author_id.String(), room_id.String(), "Some message"}
 
 	message_repository := InMemoryMessageRepository{}
 	authors_repository := InMemoryAuthorRepository{
@@ -67,7 +71,7 @@ func TestItCanSendMessage(t *testing.T) {
 
 	presenter := SendMessageTestPresenter{}
 
-	handler := SendMessageHandler(&authors_repository, &message_repository)
+	handler := SendMessageHandler(&authors_repository, &message_repository, &fakeUuidProvider)
 
 	handler(dto, &presenter)
 
@@ -76,13 +80,16 @@ func TestItCanSendMessage(t *testing.T) {
 }
 
 func TestItCannotSendAnEmptyMessage(t *testing.T) {
-	author_id, err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
+	fakeUuidProvider := testUtils.FakeUuidProvider{}
 
-	dto := SendMessageDto{author_id.String(), "room_id", ""}
+	author_id, author_err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
+	room_id, room_err := uuid.Parse("01969529-0a14-7556-a125-e9224be7b3ab")
 
-	if err != nil {
-		t.Error("Cannot generate author_id")
+	if author_err != nil || room_err != nil {
+		t.Error("Error while parsing a uuid")
 	}
+
+	dto := SendMessageDto{author_id.String(), room_id.String(), ""}
 
 	message_repository := InMemoryMessageRepository{}
 	authors_repository := InMemoryAuthorRepository{
@@ -91,7 +98,7 @@ func TestItCannotSendAnEmptyMessage(t *testing.T) {
 
 	presenter := SendMessageTestPresenter{}
 
-	handler := SendMessageHandler(&authors_repository, &message_repository)
+	handler := SendMessageHandler(&authors_repository, &message_repository, &fakeUuidProvider)
 
 	handler(dto, &presenter)
 
@@ -100,13 +107,16 @@ func TestItCannotSendAnEmptyMessage(t *testing.T) {
 }
 
 func TestItCannotSendAnOversizedMessage(t *testing.T) {
-	author_id, err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
+	fakeUuidProvider := testUtils.FakeUuidProvider{}
 
-	dto := SendMessageDto{author_id.String(), "room_id", random.RandString(2001)}
+	author_id, auth_err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
+	room_id, room_err := uuid.Parse("01969529-0a14-7556-a125-e9224be7b3ab")
 
-	if err != nil {
+	if auth_err != nil || room_err != nil {
 		t.Error("Cannot generate author_id")
 	}
+
+	dto := SendMessageDto{author_id.String(), room_id.String(), random.RandString(2001)}
 
 	message_repository := InMemoryMessageRepository{}
 	authors_repository := InMemoryAuthorRepository{
@@ -115,7 +125,7 @@ func TestItCannotSendAnOversizedMessage(t *testing.T) {
 
 	presenter := SendMessageTestPresenter{}
 
-	handler := SendMessageHandler(&authors_repository, &message_repository)
+	handler := SendMessageHandler(&authors_repository, &message_repository, &fakeUuidProvider)
 
 	handler(dto, &presenter)
 
@@ -124,18 +134,26 @@ func TestItCannotSendAnOversizedMessage(t *testing.T) {
 }
 
 func TestItCannotSendMessageIfAuthorDoesNotExist(t *testing.T) {
-	dto := SendMessageDto{"user_id", "room_id", "Some legal content"}
+	fakeUuidProvider := testUtils.FakeUuidProvider{}
+
+	author_id, auth_err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
+	room_id, room_err := uuid.Parse("01969529-0a14-7556-a125-e9224be7b3ab")
+
+	if auth_err != nil || room_err != nil {
+		t.Error("Cannot generate author_id")
+	}
+
+	dto := SendMessageDto{author_id.String(), room_id.String(), "Some legal content"}
 
 	message_repository := InMemoryMessageRepository{}
 	authors_repository := InMemoryAuthorRepository{}
 
 	presenter := SendMessageTestPresenter{}
 
-	handler := SendMessageHandler(&authors_repository, &message_repository)
+	handler := SendMessageHandler(&authors_repository, &message_repository, &fakeUuidProvider)
 
 	handler(dto, &presenter)
 
 	assert.Equal(t, "author_not_found", presenter.response)
 	assert.Equal(t, 0, len(message_repository.messages))
 }
-

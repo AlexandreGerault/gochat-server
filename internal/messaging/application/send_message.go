@@ -1,16 +1,14 @@
 package application
 
 import (
-	"log"
-
 	"alexandre-gerault.fr/gochat-server/internal/messaging/domain"
 	"github.com/google/uuid"
 )
 
 type SendMessageDto struct {
-	author_id string
-	room_id   string
-	content   string
+	Author_id string
+	Room_id   string
+	Content   string
 }
 
 type SendMessagePresenter interface {
@@ -18,41 +16,36 @@ type SendMessagePresenter interface {
 	MessageEmpty()
 	TooLongMessage()
 	AuthorNotFound()
+	InvalidPayload()
+	UnexpectedError(error string)
 }
 
-type MessageRepository interface {
-	Save(message domain.Message)
-}
-
-type AuthorRepository interface {
-	GetById(id uuid.UUID) (domain.Author, bool)
-}
-
-type UuidProvider interface{
-	Generate() uuid.UUID
+type UuidProvider interface {
+	Generate() (uuid.UUID, error)
 }
 
 func SendMessageHandler(
-	userRepository AuthorRepository,
-	messageRepository MessageRepository,
+	userRepository domain.AuthorRepository,
+	messageRepository domain.MessageRepository,
 	uuidProvider UuidProvider,
 ) func(dto SendMessageDto, presenter SendMessagePresenter) {
 	return func(dto SendMessageDto, presenter SendMessagePresenter) {
-		if len(dto.content) == 0 {
+		author_id, author_err := uuid.Parse(dto.Author_id)
+		room_id, room_err := uuid.Parse(dto.Room_id)
+
+		if author_err != nil || room_err != nil {
+			presenter.InvalidPayload()
+			return
+		}
+
+		if len(dto.Content) == 0 {
 			presenter.MessageEmpty()
 			return
 		}
 
-		if len(dto.content) > 2000 {
+		if len(dto.Content) > 2000 {
 			presenter.TooLongMessage()
 			return
-		}
-
-		author_id, author_err := uuid.Parse(dto.author_id)
-		room_id, room_err := uuid.Parse(dto.room_id)
-
-		if author_err != nil || room_err != nil {
-			log.Fatal("Invalid UUID format")
 		}
 
 		if _, found := userRepository.GetById(author_id); !found {
@@ -60,8 +53,13 @@ func SendMessageHandler(
 			return
 		}
 
-		message_id := uuidProvider.Generate()
-		message := domain.NewMessage(message_id, room_id, author_id, dto.content)
+		message_id, err := uuidProvider.Generate()
+
+		if err != nil {
+			presenter.UnexpectedError(err.Error())
+		}
+
+		message := domain.NewMessage(message_id, room_id, author_id, dto.Content)
 		messageRepository.Save(message)
 
 		presenter.Presents()

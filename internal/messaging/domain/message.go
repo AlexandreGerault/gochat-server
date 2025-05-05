@@ -12,3 +12,7 @@ type Message struct {
 func NewMessage(message_id uuid.UUID, room_id uuid.UUID, author_id uuid.UUID, content string) Message {
 	return Message{message_id, room_id, author_id, content}
 }
+
+type MessageRepository interface {
+	Save(message Message)
+}

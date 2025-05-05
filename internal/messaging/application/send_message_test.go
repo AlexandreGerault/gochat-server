@@ -52,6 +52,14 @@ func (presenter *SendMessageTestPresenter) AuthorNotFound() {
 	presenter.response = "author_not_found"
 }
 
+func (presenter *SendMessageTestPresenter) InvalidPayload() {
+	presenter.response = "invalid_payload"
+}
+
+func (presenter *SendMessageTestPresenter) UnexpectedError(error string) {
+	presenter.response = error
+}
+
 func TestItCanSendMessage(t *testing.T) {
 	fakeUuidProvider := testUtils.FakeUuidProvider{}
 

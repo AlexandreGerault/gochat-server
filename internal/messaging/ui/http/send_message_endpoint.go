@@ -1,10 +1,11 @@
 package http
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 
 	"alexandre-gerault.fr/gochat-server/internal/messaging/application"
-	"alexandre-gerault.fr/gochat-server/internal/messaging/domain"
 	shared_infrastructure "alexandre-gerault.fr/gochat-server/internal/shared/infrastructure"
 )
 
@@ -32,20 +33,24 @@ func (p *SendMessagePresenter) InvalidPayload() {
 	p.writer.WriteHeader(http.StatusBadRequest)
 }
 
-
+func (p *SendMessagePresenter) UnexpectedError(error string) {
+	p.writer.WriteHeader(http.StatusInternalServerError)
+	io.WriteString(p.writer, fmt.Sprintf("{\"message\": \"%s\"}", error))
+}
 
 func NewSendMessageEndpoint(app *shared_infrastructure.Application) func(writer http.ResponseWriter, request *http.Request) {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		handler := application.SendMessageHandler(
-			app.Container().Resolve(domain.AuthorRepository),
-			app.Container().Resolve(domain.MessageRepository),
-			app.Container().Resolve(application.UuidProvider),
+			app.Dependencies.AuthorRepository,
+			app.Dependencies.MessageRepository,
+			app.Dependencies.UuidProvider,
 		)
 
 		presenter := &SendMessagePresenter{writer}
 
 		handler(
 			application.SendMessageDto{
+				Author_id: request.FormValue("author_id"),
 				Room_id: request.FormValue("room_id"),
 				Content: request.FormValue("content"),
 			},

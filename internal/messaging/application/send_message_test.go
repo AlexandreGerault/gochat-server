@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"testing"
 
 	"alexandre-gerault.fr/gochat-server/internal/messaging/domain"
@@ -22,14 +23,14 @@ type InMemoryAuthorRepository struct {
 	authors []domain.Author
 }
 
-func (inMemoryUserRepository *InMemoryAuthorRepository) GetById(id uuid.UUID) (domain.Author, bool) {
+func (inMemoryUserRepository *InMemoryAuthorRepository) GetById(id uuid.UUID) (domain.Author, error) {
 	for _, author := range inMemoryUserRepository.authors {
 		if author.Uuid.String() == id.String() {
-			return author, true
+			return author, nil
 		}
 	}
 
-	return domain.Author{}, false
+	return domain.Author{}, fmt.Errorf("Cannot find author %s", id.String())
 }
 
 func (inMemoryMessageRepository *InMemoryMessageRepository) Save(message domain.Message) {

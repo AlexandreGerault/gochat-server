@@ -13,7 +13,5 @@ func NewAuthor(uuid uuid.UUID) Author {
 }
 
 type AuthorRepository interface {
-	GetById(id uuid.UUID) (Author, bool)
+	GetById(id uuid.UUID) (Author, error)
 }
-
-

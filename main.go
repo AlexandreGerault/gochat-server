@@ -5,23 +5,21 @@ import (
 	"net/http"
 	"time"
 
-	messagingHttp "alexandre-gerault.fr/gochat-server/internal/messaging/ui/http"
+	messaging_http "alexandre-gerault.fr/gochat-server/internal/messaging/ui/http"
 	shared_infrastructure "alexandre-gerault.fr/gochat-server/internal/shared/infrastructure"
 )
 
-
-
 func main() {
-	app := shared_infrastructure.Application {}
+	app := shared_infrastructure.Application{}
 
-	app.Boot()
+	app.Register()
 	shared_infrastructure.RunMigrations()
 
-	log.Println("Start http server...")
+	log.Println("Start http server (http://localhost:8080)...")
 
 	router := http.NewServeMux()
 
-	router.HandleFunc("POST /messages/", messagingHttp.SendMessageEndpoint)
+	router.HandleFunc("POST /messages/", messaging_http.NewSendMessageEndpoint(&app))
 
 	httpServer := &http.Server{
 		Addr:           ":8080",
@@ -33,5 +31,5 @@ func main() {
 
 	log.Fatal(httpServer.ListenAndServe())
 
-	log.Println("Http server started successfully")
+	log.Println("Gracefully shutdown.")
 }

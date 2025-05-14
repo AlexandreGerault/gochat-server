@@ -1,7 +1,6 @@
 package application
 
 import (
-	"fmt"
 	"testing"
 
 	"alexandre-gerault.fr/gochat-server/internal/messaging/domain"
@@ -23,21 +22,21 @@ type InMemoryAuthorRepository struct {
 	authors []domain.Author
 }
 
-func (inMemoryUserRepository *InMemoryAuthorRepository) GetById(id uuid.UUID) (domain.Author, error) {
-	for _, author := range inMemoryUserRepository.authors {
+func (in_memory_author_repository *InMemoryAuthorRepository) Exist(id uuid.UUID) bool {
+	for _, author := range in_memory_author_repository.authors {
 		if author.Uuid.String() == id.String() {
-			return author, nil
+			return true
 		}
 	}
 
-	return domain.Author{}, fmt.Errorf("Cannot find author %s", id.String())
+	return false
 }
 
-func (inMemoryMessageRepository *InMemoryMessageRepository) Save(message domain.Message) {
-	inMemoryMessageRepository.messages = append(inMemoryMessageRepository.messages, message)
+func (in_memory_message_repository *InMemoryMessageRepository) Save(message domain.Message) {
+	in_memory_message_repository.messages = append(in_memory_message_repository.messages, message)
 }
 
-func (presenter *SendMessageTestPresenter) Presents() {
+func (presenter *SendMessageTestPresenter) MessageSentSuccessfully() {
 	presenter.response = "success"
 }
 
@@ -62,7 +61,7 @@ func (presenter *SendMessageTestPresenter) UnexpectedError(error string) {
 }
 
 func TestItCanSendMessage(t *testing.T) {
-	fakeUuidProvider := testUtils.FakeUuidProvider{}
+	fake_uuid_provider := testUtils.FakeUuidProvider{}
 
 	author_id, author_err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
 	room_id, room_err := uuid.Parse("01969529-0a14-7556-a125-e9224be7b3ab")
@@ -80,7 +79,7 @@ func TestItCanSendMessage(t *testing.T) {
 
 	presenter := SendMessageTestPresenter{}
 
-	handler := SendMessageHandler(&authors_repository, &message_repository, &fakeUuidProvider)
+	handler := SendMessageHandler(&authors_repository, &message_repository, &fake_uuid_provider)
 
 	handler(dto, &presenter)
 
@@ -89,7 +88,7 @@ func TestItCanSendMessage(t *testing.T) {
 }
 
 func TestItCannotSendAnEmptyMessage(t *testing.T) {
-	fakeUuidProvider := testUtils.FakeUuidProvider{}
+	fake_uuid_provider := testUtils.FakeUuidProvider{}
 
 	author_id, author_err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
 	room_id, room_err := uuid.Parse("01969529-0a14-7556-a125-e9224be7b3ab")
@@ -107,7 +106,7 @@ func TestItCannotSendAnEmptyMessage(t *testing.T) {
 
 	presenter := SendMessageTestPresenter{}
 
-	handler := SendMessageHandler(&authors_repository, &message_repository, &fakeUuidProvider)
+	handler := SendMessageHandler(&authors_repository, &message_repository, &fake_uuid_provider)
 
 	handler(dto, &presenter)
 
@@ -116,7 +115,7 @@ func TestItCannotSendAnEmptyMessage(t *testing.T) {
 }
 
 func TestItCannotSendAnOversizedMessage(t *testing.T) {
-	fakeUuidProvider := testUtils.FakeUuidProvider{}
+	fake_uuid_provider := testUtils.FakeUuidProvider{}
 
 	author_id, auth_err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
 	room_id, room_err := uuid.Parse("01969529-0a14-7556-a125-e9224be7b3ab")
@@ -134,7 +133,7 @@ func TestItCannotSendAnOversizedMessage(t *testing.T) {
 
 	presenter := SendMessageTestPresenter{}
 
-	handler := SendMessageHandler(&authors_repository, &message_repository, &fakeUuidProvider)
+	handler := SendMessageHandler(&authors_repository, &message_repository, &fake_uuid_provider)
 
 	handler(dto, &presenter)
 
@@ -143,7 +142,7 @@ func TestItCannotSendAnOversizedMessage(t *testing.T) {
 }
 
 func TestItCannotSendMessageIfAuthorDoesNotExist(t *testing.T) {
-	fakeUuidProvider := testUtils.FakeUuidProvider{}
+	fake_uuid_provider := testUtils.FakeUuidProvider{}
 
 	author_id, auth_err := uuid.Parse("01968e00-1b4d-7a91-bb2a-c55bd56a2dac")
 	room_id, room_err := uuid.Parse("01969529-0a14-7556-a125-e9224be7b3ab")
@@ -159,7 +158,7 @@ func TestItCannotSendMessageIfAuthorDoesNotExist(t *testing.T) {
 
 	presenter := SendMessageTestPresenter{}
 
-	handler := SendMessageHandler(&authors_repository, &message_repository, &fakeUuidProvider)
+	handler := SendMessageHandler(&authors_repository, &message_repository, &fake_uuid_provider)
 
 	handler(dto, &presenter)
 

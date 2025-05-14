@@ -12,7 +12,7 @@ type SendMessageDto struct {
 }
 
 type SendMessagePresenter interface {
-	Presents()
+	MessageSentSuccessfully()
 	MessageEmpty()
 	TooLongMessage()
 	AuthorNotFound()
@@ -25,9 +25,9 @@ type UuidProvider interface {
 }
 
 func SendMessageHandler(
-	userRepository domain.AuthorRepository,
-	messageRepository domain.MessageRepository,
-	uuidProvider UuidProvider,
+	author_repository domain.AuthorRepository,
+	message_repository domain.MessageRepository,
+	uuid_provider UuidProvider,
 ) func(dto SendMessageDto, presenter SendMessagePresenter) {
 	return func(dto SendMessageDto, presenter SendMessagePresenter) {
 		author_id, author_err := uuid.Parse(dto.Author_id)
@@ -48,20 +48,20 @@ func SendMessageHandler(
 			return
 		}
 
-		if _, found := userRepository.GetById(author_id); !found {
+		if found := author_repository.Exist(author_id); found == false {
 			presenter.AuthorNotFound()
 			return
 		}
 
-		message_id, err := uuidProvider.Generate()
+		message_id, err := uuid_provider.Generate()
 
 		if err != nil {
 			presenter.UnexpectedError(err.Error())
 		}
 
 		message := domain.NewMessage(message_id, room_id, author_id, dto.Content)
-		messageRepository.Save(message)
+		message_repository.Save(message)
 
-		presenter.Presents()
+		presenter.MessageSentSuccessfully()
 	}
 }

@@ -14,16 +14,16 @@ type Application struct {
 }
 
 type Dependencies struct {
-	AuthorRepository  domain.AuthorRepository
-	MessageRepository domain.MessageRepository
-	UuidProvider      application.UuidProvider
+	Author_Repository  domain.AuthorRepository
+	Message_Repository domain.MessageRepository
+	Uuid_Provider      application.UuidProvider
 }
 
 func (app *Application) Register() *Application {
 	app.Database = CreateDatabase()
-	app.Dependencies.MessageRepository = &infrastructure.SqlMessageRepository{Database: app.Database}
-	app.Dependencies.AuthorRepository = &infrastructure.SqlAuthorRepository{Database: app.Database}
-	app.Dependencies.UuidProvider = &UuidGenerator{}
+	app.Dependencies.Message_Repository = &infrastructure.SqlMessageRepository{Database: app.Database}
+	app.Dependencies.Author_Repository = &infrastructure.SqlAuthorRepository{Database: app.Database}
+	app.Dependencies.Uuid_Provider = &UuidGenerator{}
 
 	return app
 }

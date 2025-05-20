@@ -48,7 +48,7 @@ func SendMessageHandler(
 			return
 		}
 
-		if found := author_repository.Exist(author_id); found == false {
+		if !author_repository.Exist(author_id) {
 			presenter.AuthorNotFound()
 			return
 		}

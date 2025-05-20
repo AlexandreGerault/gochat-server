@@ -32,8 +32,10 @@ func (in_memory_author_repository *InMemoryAuthorRepository) Exist(id uuid.UUID)
 	return false
 }
 
-func (in_memory_message_repository *InMemoryMessageRepository) Save(message domain.Message) {
+func (in_memory_message_repository *InMemoryMessageRepository) Save(message domain.Message) (uuid.UUID, error) {
 	in_memory_message_repository.messages = append(in_memory_message_repository.messages, message)
+
+	return message.Id, nil
 }
 
 func (presenter *SendMessageTestPresenter) MessageSentSuccessfully() {

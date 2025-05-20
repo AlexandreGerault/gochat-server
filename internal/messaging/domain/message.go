@@ -3,10 +3,10 @@ package domain
 import "github.com/google/uuid"
 
 type Message struct {
-	id        uuid.UUID
-	room_id   uuid.UUID
-	author_id uuid.UUID
-	content   string
+	Id        uuid.UUID
+	Room_Id   uuid.UUID
+	Author_Id uuid.UUID
+	Content   string
 }
 
 func NewMessage(message_id uuid.UUID, room_id uuid.UUID, author_id uuid.UUID, content string) Message {
@@ -14,5 +14,5 @@ func NewMessage(message_id uuid.UUID, room_id uuid.UUID, author_id uuid.UUID, co
 }
 
 type MessageRepository interface {
-	Save(message Message)
+	Save(message Message) (uuid.UUID, error)
 }

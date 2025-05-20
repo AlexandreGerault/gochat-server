@@ -12,7 +12,7 @@ type SqlAuthorRepository struct {
 }
 
 func (sql_author_repository *SqlAuthorRepository) Exist(id uuid.UUID) bool {
-	row := sql_author_repository.Database.QueryRow("SELECT uuid FROM authors WHERE uuid = $1", id.String())
+	row := sql_author_repository.Database.QueryRow("SELECT id FROM users WHERE id = $1", id.String())
 
 	var author domain.Author
 

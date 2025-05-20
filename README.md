@@ -15,9 +15,9 @@ As a learning feature, I don't plan password forgotten features and similar. Jus
 Regarding the architecture I plan to stick to something relatively simple. However I did not have definitive answers yet.
 At the moment here are the points I think are gonna be true:
 
-- It is a server/client architecture, opposed to P2P (peer-to-peer) ;
-- It is going to use http(s) transport for synchronous communication ;
-- It is going to use some Socket-like transport for real-time.
+  - It is a server/client architecture, opposed to P2P (peer-to-peer) ;
+  - It is going to use http(s) transport for synchronous communication ;
+  - It is going to use some Socket-like transport for real-time.
 
 To store data I'll start with a relationnal database. Regarding the code organization I think I'll follow some hexagonal architecture principals.
 
@@ -58,6 +58,20 @@ If you're having trouble with permissions, ensure you have the executable right:
 ```bash
 sudo chmod +x ./gochat
 ```
+
+Also you can start a PostgreSQL database container with this docker command:
+
+```bash
+docker run --name gochat-server-db -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres
+ ```
+
+ This way you can run the server like so:
+
+ ```bash
+ DATABASE_URL="postgresql://postgres:password@localhost:5432/postgres?sslmode=disable" ./gochat-server
+```
+
+Keep in mind this is for local development of course, not production ready.
 
 ## Test
 
